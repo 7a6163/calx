@@ -1,0 +1,6 @@
+# cargo-mutants settings (see .github/workflows/mutants.yml).
+exclude_re = [
+  # Equivalent mutant: the sum is only the row Array's starting capacity, so
+  # a wrong capacity changes speed, not the rows.
+  'replace \+ with \* in each_workbook_row',
+]

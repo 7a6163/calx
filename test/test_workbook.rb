@@ -87,3 +87,16 @@ class TestWorkbook < Minitest::Test
     assert_equal %w[Visible Hidden VeryHidden Chart], FastSheet.sheet_names(fixture("any_sheets.xlsx"))
   end
 end
+
+class TestWorkbookNumbers < Minitest::Test
+  include SheetHelpers
+
+  # Past 2**53 a Float can't hold every integer, so such numbers stay Floats.
+  def test_whole_numbers_up_to_2_pow_53_are_integers
+    path = xlsx { |wb| wb.add_worksheet << [(2**53) - 1, 2.0**53, -((2**53) - 1)] }
+    row = FastSheet.read(path)[0]
+
+    assert_equal [(2**53) - 1, 2.0**53, -((2**53) - 1)], row
+    assert_equal [Integer, Float, Integer], row.map(&:class)
+  end
+end

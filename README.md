@@ -1,5 +1,8 @@
 # fast_sheet
 
+[![CI](https://github.com/7a6163/fast_sheet/actions/workflows/main.yml/badge.svg)](https://github.com/7a6163/fast_sheet/actions/workflows/main.yml)
+[![codecov](https://codecov.io/gh/7a6163/fast_sheet/graph/badge.svg)](https://codecov.io/gh/7a6163/fast_sheet)
+
 Read CSV, TSV and spreadsheets (xlsx, xlsm, xlsb, xls, ods) row by row from Ruby with a Rust engine ([csv](https://github.com/BurntSushi/rust-csv) and [calamine](https://github.com/tafia/calamine), via [magnus](https://github.com/matsadler/magnus)). The CSV reader is 4–15× faster than Ruby's `CSV`, and the xlsx reader 10–35× faster than simple_xlsx_reader, roo and creek ([benchmarks](#performance)).
 
 It only reads. To write xlsx files, see its sibling [fast_xlsx](https://github.com/7a6163/fast_xlsx).
@@ -107,6 +110,28 @@ bundle exec rake           # compile + test + rubocop
 bundle exec rbs -r date -I sig validate
 cargo clippy --manifest-path ext/fast_sheet/Cargo.toml --all-targets -- -D warnings
 ```
+
+All behaviour is tested from Ruby (`test/`); there are no Rust unit tests.
+
+Coverage of the Rust extension while the Ruby tests run (needs [cargo-llvm-cov](https://github.com/taiki-e/cargo-llvm-cov) and `rustup component add llvm-tools-preview`). CI uploads it to Codecov.
+
+```bash
+rm -rf tmp lib/fast_sheet/fast_sheet.bundle         # force an instrumented rebuild
+eval "$(cargo llvm-cov show-env --sh)"
+bundle exec rake compile test
+cargo llvm-cov report --release                     # or --lcov / --html
+```
+
+Rebuild in a clean shell afterwards (`rm -rf tmp && bundle exec rake compile`) so the everyday build is not instrumented.
+
+Mutation tests ([cargo-mutants](https://mutants.rs)) change the Rust source one small edit at a time and check that a Ruby test fails for each change. `ext/fast_sheet/tests/ruby_suite.rs` connects the two: it rebuilds the extension and runs the Ruby suite, so `cargo test` covers the Ruby tests too. Mutants that can't change behaviour are excluded in `.cargo/mutants.toml`.
+
+```bash
+cargo install cargo-mutants
+cargo mutants --file ext/fast_sheet/src/lib.rs --jobs 4   # ~1.5 minutes; results in mutants.out/
+```
+
+Mutants listed in `mutants.out/missed.txt` point at behaviour no test checks. The `Mutation tests` workflow runs this weekly and on demand. Dependabot opens weekly update PRs for the gems, crates and GitHub Actions.
 
 The xls, xlsb, ods and some xlsx files in `test/fixtures` come from calamine's test suite (MIT).
 
