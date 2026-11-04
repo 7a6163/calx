@@ -3,7 +3,7 @@
 # in the ext/ directory.
 
 [workspace]
-members = ["./ext/fast_sheet"]
+members = ["./ext/calx"]
 resolver = "2"
 
 [profile.release]

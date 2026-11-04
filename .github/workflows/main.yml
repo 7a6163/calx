@@ -54,7 +54,7 @@ jobs:
       - name: Check the RBS signatures
         run: bundle exec rbs -r date -I sig validate
       - name: Clippy
-        run: cargo clippy --manifest-path ext/fast_sheet/Cargo.toml --all-targets -- -D warnings
+        run: cargo clippy --manifest-path ext/calx/Cargo.toml --all-targets -- -D warnings
       - uses: taiki-e/install-action@cargo-audit
       - name: Audit Rust dependencies
         run: cargo audit

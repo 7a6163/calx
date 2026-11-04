@@ -11,14 +11,14 @@ class TestWorkbook < Minitest::Test
       wb.add_worksheet << ["text", 42, 1.5, true, false, Date.new(2026, 11, 4), time, nil, -7]
     end
 
-    assert_equal [["text", 42, 1.5, true, false, Date.new(2026, 11, 4), time, nil, -7]], FastSheet.read(path)
-    assert_kind_of Integer, FastSheet.read(path)[0][1]
+    assert_equal [["text", 42, 1.5, true, false, Date.new(2026, 11, 4), time, nil, -7]], Calx.read(path)
+    assert_kind_of Integer, Calx.read(path)[0][1]
   end
 
   def test_rows_start_at_a1
     path = xlsx { |wb| wb.add_worksheet.write(2, 1, "B3") }
 
-    assert_equal [[], [], [nil, "B3"]], FastSheet.read(path)
+    assert_equal [[], [], [nil, "B3"]], Calx.read(path)
   end
 
   def test_rows_have_the_used_width
@@ -28,11 +28,11 @@ class TestWorkbook < Minitest::Test
       ws << %w[d]
     end
 
-    assert_equal [%w[a b c], ["d", nil, nil]], FastSheet.read(path)
+    assert_equal [%w[a b c], ["d", nil, nil]], Calx.read(path)
   end
 
   def test_empty_sheet
-    assert_equal [], FastSheet.read(xlsx(&:add_worksheet))
+    assert_equal [], Calx.read(xlsx(&:add_worksheet))
   end
 
   def test_sheets
@@ -41,33 +41,33 @@ class TestWorkbook < Minitest::Test
       wb.add_worksheet("Second") << ["two"]
     end
 
-    assert_equal %w[First Second], FastSheet.sheet_names(path)
-    assert_equal [["one"]], FastSheet.read(path)
-    assert_equal [["two"]], FastSheet.read(path, sheet: 1)
-    assert_equal [["two"]], FastSheet.read(path, sheet: "Second")
+    assert_equal %w[First Second], Calx.sheet_names(path)
+    assert_equal [["one"]], Calx.read(path)
+    assert_equal [["two"]], Calx.read(path, sheet: 1)
+    assert_equal [["two"]], Calx.read(path, sheet: "Second")
   end
 
   def test_unknown_sheets
     path = xlsx { |wb| wb.add_worksheet("Only") }
 
-    assert_raises(IndexError) { FastSheet.read(path, sheet: 1) }
-    assert_raises(IndexError) { FastSheet.read(path, sheet: -1) }
-    error = assert_raises(ArgumentError) { FastSheet.read(path, sheet: "Nope") }
+    assert_raises(IndexError) { Calx.read(path, sheet: 1) }
+    assert_raises(IndexError) { Calx.read(path, sheet: -1) }
+    error = assert_raises(ArgumentError) { Calx.read(path, sheet: "Nope") }
     assert_match(/sheets: Only/, error.message)
-    assert_raises(TypeError) { FastSheet.read(path, sheet: :Only) }
+    assert_raises(TypeError) { Calx.read(path, sheet: :Only) }
   end
 
   def test_csv_options_are_for_csv
     path = xlsx(&:add_worksheet)
 
-    assert_raises(ArgumentError) { FastSheet.read(path, col_sep: ";") }
-    assert_raises(ArgumentError) { FastSheet.read(path, encoding: "Big5") }
+    assert_raises(ArgumentError) { Calx.read(path, col_sep: ";") }
+    assert_raises(ArgumentError) { Calx.read(path, encoding: "Big5") }
   end
 
   # Fixtures from calamine's test suite: a date, a date and time, a duration.
   %w[date.xlsx date.xlsb date.xls date_1904.xlsx].each do |name|
     define_method("test_dates_in_#{name}") do
-      rows = FastSheet.read(fixture(name))
+      rows = Calx.read(fixture(name))
 
       assert_equal [Date.new(2021, 1, 1), 15], rows[0]
       assert_equal [Date.new(2021, 1, 2), 16], rows[1]
@@ -76,7 +76,7 @@ class TestWorkbook < Minitest::Test
   end
 
   def test_ods
-    rows = FastSheet.read(fixture("date.ods"))
+    rows = Calx.read(fixture("date.ods"))
 
     assert_equal [Date.new(2021, 1, 1), 15], rows[0]
     assert_equal [Time.new(2021, 1, 1, 10, 10, 10), 16], rows[1]
@@ -84,7 +84,7 @@ class TestWorkbook < Minitest::Test
   end
 
   def test_hidden_sheets_are_listed
-    assert_equal %w[Visible Hidden VeryHidden Chart], FastSheet.sheet_names(fixture("any_sheets.xlsx"))
+    assert_equal %w[Visible Hidden VeryHidden Chart], Calx.sheet_names(fixture("any_sheets.xlsx"))
   end
 end
 
@@ -94,7 +94,7 @@ class TestWorkbookNumbers < Minitest::Test
   # Past 2**53 a Float can't hold every integer, so such numbers stay Floats.
   def test_whole_numbers_up_to_2_pow_53_are_integers
     path = xlsx { |wb| wb.add_worksheet << [(2**53) - 1, 2.0**53, -((2**53) - 1)] }
-    row = FastSheet.read(path)[0]
+    row = Calx.read(path)[0]
 
     assert_equal [(2**53) - 1, 2.0**53, -((2**53) - 1)], row
     assert_equal [Integer, Float, Integer], row.map(&:class)

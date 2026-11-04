@@ -1,4 +1,4 @@
-module FastSheet
+module Calx
   VERSION: String
   FORMATS: Hash[String, Symbol]
 

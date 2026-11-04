@@ -5,7 +5,7 @@ source "https://rubygems.org"
 gem "cgi" # roo requires cgi, which Ruby 4.0 no longer bundles
 gem "creek"
 gem "csv"
-gem "fast_sheet", path: ".."
+gem "calx", path: ".."
 gem "fast_xlsx"
 gem "roo"
 gem "simple_xlsx_reader"

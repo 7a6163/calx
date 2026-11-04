@@ -1,5 +1,5 @@
 [package]
-name = "fast_sheet"
+name = "calx"
 version = "0.1.0"
 edition = "2021"
 authors = ["Zac <579103+7a6163@users.noreply.github.com>"]

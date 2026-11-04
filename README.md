@@ -1,7 +1,7 @@
-# fast_sheet
+# calx
 
-[![CI](https://github.com/7a6163/fast_sheet/actions/workflows/main.yml/badge.svg)](https://github.com/7a6163/fast_sheet/actions/workflows/main.yml)
-[![codecov](https://codecov.io/gh/7a6163/fast_sheet/graph/badge.svg)](https://codecov.io/gh/7a6163/fast_sheet)
+[![CI](https://github.com/7a6163/calx/actions/workflows/main.yml/badge.svg)](https://github.com/7a6163/calx/actions/workflows/main.yml)
+[![codecov](https://codecov.io/gh/7a6163/calx/graph/badge.svg)](https://codecov.io/gh/7a6163/calx)
 
 Read CSV, TSV and spreadsheets (xlsx, xlsm, xlsb, xls, ods) row by row from Ruby with a Rust engine ([csv](https://github.com/BurntSushi/rust-csv) and [calamine](https://github.com/tafia/calamine), via [magnus](https://github.com/matsadler/magnus)). The CSV reader is 4–15× faster than Ruby's `CSV`, and the xlsx reader 10–35× faster than simple_xlsx_reader, roo and creek ([benchmarks](#performance)).
 
@@ -12,7 +12,7 @@ It only reads. To write xlsx files, see its sibling [fast_xlsx](https://github.c
 ## Installation
 
 ```bash
-bundle add fast_sheet
+bundle add calx
 ```
 
 Requires CRuby 3.3 or later. Installing from source needs a Rust toolchain.
@@ -20,15 +20,15 @@ Requires CRuby 3.3 or later. Installing from source needs a Rust toolchain.
 ## Usage
 
 ```ruby
-require "fast_sheet"
+require "calx"
 
 # One Array per row; the format comes from the file extension.
-FastSheet.each_row("sales.csv") { |row| p row }    # ["North", "120", "9.5"]
-FastSheet.each_row("sales.xlsx") { |row| p row }   # ["North", 120, 9.5, #<Date 2026-07-03>]
+Calx.each_row("sales.csv") { |row| p row }    # ["North", "120", "9.5"]
+Calx.each_row("sales.xlsx") { |row| p row }   # ["North", 120, 9.5, #<Date 2026-07-03>]
 
-rows = FastSheet.read("sales.xlsx", sheet: "July") # every row at once
-FastSheet.sheet_names("sales.xlsx")                # ["June", "July"]
-FastSheet.each_row("big.csv").first(10)            # an Enumerator without a block
+rows = Calx.read("sales.xlsx", sheet: "July") # every row at once
+Calx.sheet_names("sales.xlsx")                # ["June", "July"]
+Calx.each_row("big.csv").first(10)            # an Enumerator without a block
 ```
 
 Options:
@@ -44,7 +44,7 @@ Options:
 
 ### What you get back
 
-- **CSV**: every cell is a String, as with Ruby's `CSV`. A UTF-8 byte order mark is skipped. Rows can have different lengths. A file that isn't valid UTF-8 raises `FastSheet::Error`, with a hint to pass `encoding:`.
+- **CSV**: every cell is a String, as with Ruby's `CSV`. A UTF-8 byte order mark is skipped. Rows can have different lengths. A file that isn't valid UTF-8 raises `Calx::Error`, with a hint to pass `encoding:`.
 - **Spreadsheets**: String, Integer, Float, `true`/`false`, `Date`, `Time` or `nil`.
   - Whole numbers come back as Integer (xlsx stores `42` and `42.0` the same way).
   - A date with no time of day is a `Date`; one with a time is a local `Time` (Excel stores no time zone).
@@ -54,7 +54,7 @@ Options:
 
 ### Errors
 
-`TypeError` for an argument of the wrong type, `ArgumentError` for a value that isn't allowed (an unknown format, sheet name or encoding), `IndexError` for a sheet index past the last sheet, `Errno::ENOENT` for a missing file, and `FastSheet::Error` for a file that can't be read.
+`TypeError` for an argument of the wrong type, `ArgumentError` for a value that isn't allowed (an unknown format, sheet name or encoding), `IndexError` for a sheet index past the last sheet, `Errno::ENOENT` for a missing file, and `Calx::Error` for a file that can't be read.
 
 ### Limits
 
@@ -67,34 +67,34 @@ Options:
 
 **CSV, 10 columns of numbers and short strings** (12.5 MB)
 
-| Library | Method | Time | vs fast_sheet |
+| Library | Method | Time | vs calx |
 |---|---|---:|---:|
-| **fast_sheet** 0.1.0 | `FastSheet.each_row` | **76 ms** | 1.0× |
-| **fast_sheet** 0.1.0 | `FastSheet.read` | **74 ms** | 1.0× |
+| **calx** 0.1.0 | `Calx.each_row` | **76 ms** | 1.0× |
+| **calx** 0.1.0 | `Calx.read` | **74 ms** | 1.0× |
 | csv 3.3.7 | `CSV.foreach` | 332 ms | 4.4× slower |
 | csv 3.3.7 | `CSV.read` | 407 ms | 5.4× slower |
 
 **CSV, 10 columns with quotes, commas, newlines and CJK** (26.2 MB)
 
-| Library | Method | Time | vs fast_sheet |
+| Library | Method | Time | vs calx |
 |---|---|---:|---:|
-| **fast_sheet** 0.1.0 | `FastSheet.each_row` | **99 ms** | 1.0× |
-| **fast_sheet** 0.1.0 | `FastSheet.read` | **122 ms** | 1.2× |
+| **calx** 0.1.0 | `Calx.each_row` | **99 ms** | 1.0× |
+| **calx** 0.1.0 | `Calx.read` | **122 ms** | 1.2× |
 | csv 3.3.7 | `CSV.foreach` | 1,203 ms | 12.2× slower |
 | csv 3.3.7 | `CSV.read` | 1,452 ms | 14.7× slower |
 
 **xlsx, 5 columns: integer, string, float, date, string** (6.0 MB, written by fast_xlsx)
 
-| Library | Method | Time | vs fast_sheet |
+| Library | Method | Time | vs calx |
 |---|---|---:|---:|
-| **fast_sheet** 0.1.0 | `FastSheet.each_row` | **324 ms** | 1.0× |
+| **calx** 0.1.0 | `Calx.each_row` | **324 ms** | 1.0× |
 | simple_xlsx_reader 5.1.0 | `rows.each` | 3,480 ms | 10.7× slower |
 | roo 4.0.0 | `each_row_streaming` | 7,568 ms | 23.3× slower |
 | creek 2.6.3 | `simple_rows` | 11,466 ms | 35.4× slower |
 
-Ruby's `CSV` slows down most on quoted fields, which real exports and uploads usually have. The libraries don't return quite the same thing: roo yields cell objects and creek yields a Hash per row, while fast_sheet and simple_xlsx_reader yield Arrays of values.
+Ruby's `CSV` slows down most on quoted fields, which real exports and uploads usually have. The libraries don't return quite the same thing: roo yields cell objects and creek yields a Hash per row, while calx and simple_xlsx_reader yield Arrays of values.
 
-Most of fast_sheet's time goes into making the Ruby Strings and Arrays: parsing alone is about 5× faster again. Times move by 10–30% between runs, so treat the ratios as rough. Run it yourself:
+Most of calx's time goes into making the Ruby Strings and Arrays: parsing alone is about 5× faster again. Times move by 10–30% between runs, so treat the ratios as rough. Run it yourself:
 
 ```bash
 bundle exec rake compile
@@ -108,7 +108,7 @@ BUNDLE_GEMFILE=bench/Gemfile bundle exec ruby --yjit bench/read.rb [rows]
 bin/setup
 bundle exec rake           # compile + test + rubocop
 bundle exec rbs -r date -I sig validate
-cargo clippy --manifest-path ext/fast_sheet/Cargo.toml --all-targets -- -D warnings
+cargo clippy --manifest-path ext/calx/Cargo.toml --all-targets -- -D warnings
 ```
 
 All behaviour is tested from Ruby (`test/`); there are no Rust unit tests.
@@ -116,7 +116,7 @@ All behaviour is tested from Ruby (`test/`); there are no Rust unit tests.
 Coverage of the Rust extension while the Ruby tests run (needs [cargo-llvm-cov](https://github.com/taiki-e/cargo-llvm-cov) and `rustup component add llvm-tools-preview`). CI uploads it to Codecov.
 
 ```bash
-rm -rf tmp lib/fast_sheet/fast_sheet.bundle         # force an instrumented rebuild
+rm -rf tmp lib/calx/calx.bundle         # force an instrumented rebuild
 eval "$(cargo llvm-cov show-env --sh)"
 bundle exec rake compile test
 cargo llvm-cov report --release                     # or --lcov / --html
@@ -124,18 +124,18 @@ cargo llvm-cov report --release                     # or --lcov / --html
 
 Rebuild in a clean shell afterwards (`rm -rf tmp && bundle exec rake compile`) so the everyday build is not instrumented.
 
-Mutation tests ([cargo-mutants](https://mutants.rs)) change the Rust source one small edit at a time and check that a Ruby test fails for each change. `ext/fast_sheet/tests/ruby_suite.rs` connects the two: it rebuilds the extension and runs the Ruby suite, so `cargo test` covers the Ruby tests too. Mutants that can't change behaviour are excluded in `.cargo/mutants.toml`.
+Mutation tests ([cargo-mutants](https://mutants.rs)) change the Rust source one small edit at a time and check that a Ruby test fails for each change. `ext/calx/tests/ruby_suite.rs` connects the two: it rebuilds the extension and runs the Ruby suite, so `cargo test` covers the Ruby tests too. Mutants that can't change behaviour are excluded in `.cargo/mutants.toml`.
 
 ```bash
 cargo install cargo-mutants
-cargo mutants --file ext/fast_sheet/src/lib.rs --jobs 4   # ~1.5 minutes; results in mutants.out/
+cargo mutants --file ext/calx/src/lib.rs --jobs 4   # ~1.5 minutes; results in mutants.out/
 ```
 
 Mutants listed in `mutants.out/missed.txt` point at behaviour no test checks. The `Mutation tests` workflow runs this weekly and on demand. Dependabot opens weekly update PRs for the gems, crates and GitHub Actions.
 
 The xls, xlsb, ods and some xlsx files in `test/fixtures` come from calamine's test suite (MIT).
 
-Releasing: bump `lib/fast_sheet/version.rb`, update the CHANGELOG, and push a `vX.Y.Z` tag. The `Build gems` workflow builds the platform gems and publishes them to RubyGems.
+Releasing: bump `lib/calx/version.rb`, update the CHANGELOG, and push a `vX.Y.Z` tag. The `Build gems` workflow builds the platform gems and publishes them to RubyGems.
 
 ## License
 

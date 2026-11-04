@@ -16,7 +16,7 @@ fn ruby_test_suite_passes() {
         .env("RB_SYS_CARGO_PROFILE", "dev")
         // The suite takes seconds; a mutant that hangs (a loop or a deadlock)
         // is killed instead of running on after cargo-mutants gives up on it.
-        .env("FAST_SHEET_TEST_TIMEOUT_SECONDS", "120")
+        .env("CALX_TEST_TIMEOUT_SECONDS", "120")
         .status()
         .expect("could not run `bundle exec rake compile test`");
     assert!(status.success(), "the Ruby test suite failed");

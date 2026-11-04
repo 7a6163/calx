@@ -13,10 +13,10 @@ require "rb_sys/extensiontask"
 
 task build: :compile
 
-GEMSPEC = Gem::Specification.load("fast_sheet.gemspec")
+GEMSPEC = Gem::Specification.load("calx.gemspec")
 
-RbSys::ExtensionTask.new("fast_sheet", GEMSPEC) do |ext|
-  ext.lib_dir = "lib/fast_sheet"
+RbSys::ExtensionTask.new("calx", GEMSPEC) do |ext|
+  ext.lib_dir = "lib/calx"
 end
 
 task default: %i[compile test rubocop]

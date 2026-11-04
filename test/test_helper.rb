@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
-require "fast_sheet"
+require "calx"
 require "fast_xlsx"
 require "tmpdir"
 
 require "minitest/autorun"
 
-# Set by ext/fast_sheet/tests/ruby_suite.rs for mutation testing. A mutant can
+# Set by ext/calx/tests/ruby_suite.rs for mutation testing. A mutant can
 # hang inside the extension (looping, or deadlocked), where Ruby can't
 # interrupt it, and this process outlives cargo-mutants' own timeout. A
 # separate process kills it after that many seconds unless the tests finish.
-if (seconds = ENV.fetch("FAST_SHEET_TEST_TIMEOUT_SECONDS", nil))
+if (seconds = ENV.fetch("CALX_TEST_TIMEOUT_SECONDS", nil))
   watchdog = Process.spawn("sleep #{Integer(seconds)}; kill -9 #{Process.pid}", pgroup: true)
   Process.detach(watchdog)
   Minitest.after_run { Process.kill(:TERM, -watchdog) } # its sleep too

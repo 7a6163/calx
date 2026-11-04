@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-# Reads the same data with fast_sheet and other Ruby readers.
+# Reads the same data with calx and other Ruby readers.
 #   bundle exec rake compile
 #   BUNDLE_GEMFILE=bench/Gemfile bundle install
 #   BUNDLE_GEMFILE=bench/Gemfile bundle exec ruby --yjit bench/read.rb [rows]
 require "csv"
 require "creek"
-require "fast_sheet"
+require "calx"
 require "fast_xlsx"
 require "roo"
 require "simple_xlsx_reader"
@@ -47,11 +47,11 @@ Dir.mktmpdir do |dir|
   { "numbers and short strings" => simple, "quotes, commas, newlines and CJK" => quoted }.each do |name, row|
     path = File.join(dir, "data.csv")
     CSV.open(path, "w") { |csv| ROWS.times { |i| csv << row.(i) } }
-    raise "rows differ" unless FastSheet.read(path) == CSV.read(path)
+    raise "rows differ" unless Calx.read(path) == CSV.read(path)
 
     report("CSV, #{name}: #{ROWS} rows x 10, #{(File.size(path) / 1e6).round(1)} MB", ROWS, 5,
-           "fast_sheet FastSheet.each_row" => -> { count_each(FastSheet.each_row(path)) },
-           "fast_sheet FastSheet.read" => -> { FastSheet.read(path).size },
+           "calx Calx.each_row" => -> { count_each(Calx.each_row(path)) },
+           "calx Calx.read" => -> { Calx.read(path).size },
            "csv CSV.foreach" => -> { count_each(CSV.foreach(path)) },
            "csv CSV.read" => -> { CSV.read(path).size })
   end
@@ -64,7 +64,7 @@ Dir.mktmpdir do |dir|
 
   report("xlsx: #{ROWS} rows x 5 (integer, string, float, date, string), " \
          "#{(File.size(path) / 1e6).round(1)} MB", ROWS, 3,
-         "fast_sheet FastSheet.each_row" => -> { count_each(FastSheet.each_row(path)) },
+         "calx Calx.each_row" => -> { count_each(Calx.each_row(path)) },
          "creek simple_rows" => -> { count_each(Creek::Book.new(path).sheets[0].simple_rows) },
          "simple_xlsx_reader rows.each" => -> { count_each(SimpleXlsxReader.open(path).sheets[0].rows) },
          "roo each_row_streaming" => -> { count_each(Roo::Excelx.new(path).to_enum(:each_row_streaming)) })

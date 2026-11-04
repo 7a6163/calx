@@ -8,14 +8,14 @@ use magnus::{
     Ruby, Value,
 };
 
-// Defined in lib/fast_sheet.rb before this extension loads.
+// Defined in lib/calx.rb before this extension loads.
 static ERROR: Lazy<ExceptionClass> = Lazy::new(|ruby| {
     ruby.class_object()
-        .const_get::<_, RModule>("FastSheet")
+        .const_get::<_, RModule>("Calx")
         .and_then(|m| m.const_get("Error"))
         .unwrap()
 });
-// lib/fast_sheet.rb requires "date".
+// lib/calx.rb requires "date".
 static DATE: Lazy<RClass> = Lazy::new(|ruby| ruby.class_object().const_get("Date").unwrap());
 
 fn error(ruby: &Ruby, msg: impl std::fmt::Display) -> Error {
@@ -195,7 +195,7 @@ fn each_workbook_row(
 
 #[magnus::init]
 fn init(ruby: &Ruby) -> Result<(), Error> {
-    let m = ruby.define_module("FastSheet")?;
+    let m = ruby.define_module("Calx")?;
     m.define_singleton_method("_each_csv_row", function!(each_csv_row, 3))?;
     m.define_singleton_method("_each_workbook_row", function!(each_workbook_row, 4))?;
     m.define_singleton_method("_sheet_names", function!(sheet_names, 2))?;

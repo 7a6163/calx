@@ -2,27 +2,27 @@
 
 require "date"
 require "time"
-require_relative "fast_sheet/version"
+require_relative "calx/version"
 
 # Reads CSV, TSV and spreadsheets (xlsx, xlsm, xlsb, xls, ods) row by row
 # with a Rust core (the csv and calamine crates).
 #
 # Errors: TypeError for an argument of the wrong type, ArgumentError for a
 # value that isn't allowed, IndexError for a sheet index past the last sheet,
-# Errno::ENOENT for a missing file, and FastSheet::Error for a file that
+# Errno::ENOENT for a missing file, and Calx::Error for a file that
 # can't be read.
-module FastSheet
+module Calx
   # Raised when a file can't be read: corrupt, the wrong format, or (CSV) not
   # in the encoding given.
   class Error < StandardError; end
 
-  # The native extension looks up FastSheet::Error, so load it after Error is defined.
-  # Precompiled gems ship one binary per Ruby version (fast_sheet/3.4/fast_sheet);
-  # a gem compiled on install has a single fast_sheet/fast_sheet.
+  # The native extension looks up Calx::Error, so load it after Error is defined.
+  # Precompiled gems ship one binary per Ruby version (calx/3.4/calx);
+  # a gem compiled on install has a single calx/calx.
   begin
-    require "fast_sheet/#{RUBY_VERSION[/\d+\.\d+/]}/fast_sheet"
+    require "calx/#{RUBY_VERSION[/\d+\.\d+/]}/calx"
   rescue LoadError
-    require "fast_sheet/fast_sheet"
+    require "calx/calx"
   end
 
   # File extensions and the format each one is read as.

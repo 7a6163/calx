@@ -100,10 +100,10 @@ jobs:
         run: |
           gem install pkg/*.gem --no-document
           ruby -e '
-            require "fast_sheet"
+            require "calx"
             File.write("smoke.csv", "a,b\n1,2\n")
-            abort "wrong rows" unless FastSheet.read("smoke.csv") == [%w[a b], %w[1 2]]
-            puts "fast_sheet #{FastSheet::VERSION} OK on #{RUBY_PLATFORM}, Ruby #{RUBY_VERSION}"
+            abort "wrong rows" unless Calx.read("smoke.csv") == [%w[a b], %w[1 2]]
+            puts "calx #{Calx::VERSION} OK on #{RUBY_PLATFORM}, Ruby #{RUBY_VERSION}"
           '
 
   # The musl gems, in the official Alpine Ruby images (as Alpine-based Docker
@@ -138,10 +138,10 @@ jobs:
           docker run --rm --platform ${{ matrix.target.docker }} -v "$PWD/pkg:/pkg" ruby:${{ matrix.ruby }}-alpine sh -c '
             gem install /pkg/*.gem --no-document &&
             cd /tmp && ruby -e "
-              require %q(fast_sheet)
+              require %q(calx)
               File.write(%q(smoke.csv), %Q(a,b\n1,2\n))
-              abort %q(wrong rows) unless FastSheet.read(%q(smoke.csv)) == [%w[a b], %w[1 2]]
-              puts %Q(fast_sheet #{FastSheet::VERSION} OK on #{RUBY_PLATFORM}, Ruby #{RUBY_VERSION})
+              abort %q(wrong rows) unless Calx.read(%q(smoke.csv)) == [%w[a b], %w[1 2]]
+              puts %Q(calx #{Calx::VERSION} OK on #{RUBY_PLATFORM}, Ruby #{RUBY_VERSION})
             "
           '
 
@@ -164,11 +164,11 @@ jobs:
         with:
           ruby-version: "4.0.5"
 
-      - name: Check tag matches FastSheet::VERSION
+      - name: Check tag matches Calx::VERSION
         run: |
-          version=$(ruby -Ilib -e 'require "fast_sheet/version"; print FastSheet::VERSION')
+          version=$(ruby -Ilib -e 'require "calx/version"; print Calx::VERSION')
           if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} does not match FastSheet::VERSION ${version}"
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match Calx::VERSION ${version}"
             exit 1
           fi
 
@@ -191,7 +191,7 @@ jobs:
         continue-on-error: true
         env:
           GEM_HOST_API_KEY: Bearer ${{ secrets.GITHUB_TOKEN }}
-        run: gem push --host "https://rubygems.pkg.github.com/${GITHUB_REPOSITORY_OWNER}" "pkg/fast_sheet-${GITHUB_REF_NAME#v}.gem"
+        run: gem push --host "https://rubygems.pkg.github.com/${GITHUB_REPOSITORY_OWNER}" "pkg/calx-${GITHUB_REF_NAME#v}.gem"
 
       - uses: rubygems/configure-rubygems-credentials@v2.1.0
 

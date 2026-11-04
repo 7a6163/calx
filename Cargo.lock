@@ -75,6 +75,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "calx"
+version = "0.1.0"
+dependencies = [
+ "calamine",
+ "csv",
+ "magnus",
+ "rb-sys",
+ "rb-sys-env",
+]
+
+[[package]]
 name = "cexpr"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -188,17 +199,6 @@ name = "fast-float2"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c6e8948ce679d00a02a94739ea185595dca7118ed04feb991127e443bd3d761f"
-
-[[package]]
-name = "fast_sheet"
-version = "0.1.0"
-dependencies = [
- "calamine",
- "csv",
- "magnus",
- "rb-sys",
- "rb-sys-env",
-]
 
 [[package]]
 name = "flate2"
