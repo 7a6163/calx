@@ -1,0 +1,21 @@
+module FastSheet
+  VERSION: String
+  FORMATS: Hash[String, Symbol]
+
+  class Error < StandardError
+  end
+
+  type path = String | _ToPath
+  type cell = String | Integer | Float | bool | Date | Time | nil
+
+  interface _ToPath
+    def to_path: () -> String
+  end
+
+  def self.each_row: (path path, ?format: Symbol?, ?sheet: (Integer | String)?, ?col_sep: String?, ?encoding: (String | Encoding)?) { (Array[cell] row) -> void } -> nil
+                   | (path path, ?format: Symbol?, ?sheet: (Integer | String)?, ?col_sep: String?, ?encoding: (String | Encoding)?) -> Enumerator[Array[cell], nil]
+
+  def self.read: (path path, ?format: Symbol?, ?sheet: (Integer | String)?, ?col_sep: String?, ?encoding: (String | Encoding)?) -> Array[Array[cell]]
+
+  def self.sheet_names: (path path, ?format: Symbol?) -> Array[String]
+end

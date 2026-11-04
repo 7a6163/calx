@@ -1,0 +1,199 @@
+---
+name: Build gems
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "cross-gem/*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci-data:
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.fetch.outputs.result }}
+    steps:
+      - uses: oxidize-rb/actions/fetch-ci-data@v1
+        id: fetch
+        with:
+          supported-ruby-platforms: |
+            exclude: ["arm-linux", "x64-mingw32", "aarch64-mingw-ucrt"] # aarch64-mingw-ucrt: not supported by cross-gem yet
+          stable-ruby-versions: |
+            exclude: ["head"]
+
+  source-gem:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0.5"
+          bundler-cache: true
+
+      - name: Build gem
+        run: bundle exec rake build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: gem-source
+          path: pkg/*.gem
+
+  cross-gem:
+    name: Compile native gem for ${{ matrix.platform }}
+    runs-on: ubuntu-latest
+    needs: ci-data
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJSON(needs.ci-data.outputs.result).supported-ruby-platforms }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0.5"
+          bundler-cache: true
+
+      - uses: oxidize-rb/actions/cross-gem@v1
+        id: cross-gem
+        with:
+          platform: ${{ matrix.platform }}
+          ruby-versions: ${{ join(fromJSON(needs.ci-data.outputs.result).stable-ruby-versions, ',') }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: gem-${{ matrix.platform }}
+          path: ${{ steps.cross-gem.outputs.gem-path }}
+
+  # Install the built platform gems the way users do and load them, so a gem
+  # that cannot be required is never published.
+  smoke-test:
+    name: Install ${{ matrix.target.platform }} gem on Ruby ${{ matrix.ruby }}
+    needs: cross-gem
+    runs-on: ${{ matrix.target.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { os: ubuntu-latest, platform: x86_64-linux }
+          - { os: ubuntu-24.04-arm, platform: aarch64-linux }
+          - { os: macos-latest, platform: arm64-darwin }
+          - { os: windows-latest, platform: x64-mingw-ucrt }
+        ruby: ["3.3", "3.4", "4.0"]
+    steps:
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: gem-${{ matrix.target.platform }}
+          path: pkg
+
+      - name: Install and use the gem
+        shell: bash
+        run: |
+          gem install pkg/*.gem --no-document
+          ruby -e '
+            require "fast_sheet"
+            File.write("smoke.csv", "a,b\n1,2\n")
+            abort "wrong rows" unless FastSheet.read("smoke.csv") == [%w[a b], %w[1 2]]
+            puts "fast_sheet #{FastSheet::VERSION} OK on #{RUBY_PLATFORM}, Ruby #{RUBY_VERSION}"
+          '
+
+  # The musl gems, in the official Alpine Ruby images (as Alpine-based Docker
+  # deployments use them). docker run rather than a job container: JavaScript
+  # actions don't run in Alpine containers. 32-bit ARM runs under QEMU, so it
+  # is tried on one Ruby only. (x86_64-darwin has no GitHub runner left.)
+  smoke-test-musl:
+    name: Install ${{ matrix.target.platform }} gem on Ruby ${{ matrix.ruby }} (Alpine)
+    needs: cross-gem
+    runs-on: ${{ matrix.target.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { os: ubuntu-latest, platform: x86_64-linux-musl, docker: linux/amd64 }
+          - { os: ubuntu-24.04-arm, platform: aarch64-linux-musl, docker: linux/arm64 }
+        ruby: ["3.3", "3.4", "4.0"]
+        include:
+          - target: { os: ubuntu-latest, platform: arm-linux-musl, docker: linux/arm/v7, qemu: true }
+            ruby: "3.4"
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: gem-${{ matrix.target.platform }}
+          path: pkg
+
+      - if: matrix.target.qemu
+        uses: docker/setup-qemu-action@v4
+
+      - name: Install and use the gem
+        run: |
+          docker run --rm --platform ${{ matrix.target.docker }} -v "$PWD/pkg:/pkg" ruby:${{ matrix.ruby }}-alpine sh -c '
+            gem install /pkg/*.gem --no-document &&
+            cd /tmp && ruby -e "
+              require %q(fast_sheet)
+              File.write(%q(smoke.csv), %Q(a,b\n1,2\n))
+              abort %q(wrong rows) unless FastSheet.read(%q(smoke.csv)) == [%w[a b], %w[1 2]]
+              puts %Q(fast_sheet #{FastSheet::VERSION} OK on #{RUBY_PLATFORM}, Ruby #{RUBY_VERSION})
+            "
+          '
+
+  publish:
+    name: Publish to RubyGems and GitHub Packages
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [source-gem, cross-gem, smoke-test, smoke-test-musl]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      packages: write # GitHub Packages
+      id-token: write # RubyGems trusted publishing
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0.5"
+
+      - name: Check tag matches FastSheet::VERSION
+        run: |
+          version=$(ruby -Ilib -e 'require "fast_sheet/version"; print FastSheet::VERSION')
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match FastSheet::VERSION ${version}"
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: gem-*
+          path: pkg
+          merge-multiple: true
+
+      - run: ls -l pkg
+
+      # GitHub Packages goes first, with only its own token. gem push prefers
+      # GEM_HOST_API_KEY over --key, so once the RubyGems credentials below are
+      # configured they would be sent to whichever host is pushed to.
+      # GitHub Packages keeps one gem per version (it rejects a second platform
+      # gem as "already pushed"), so only the source gem goes there; installing
+      # from it compiles the extension and needs a Rust toolchain.
+      - name: Push to GitHub Packages
+        # A GitHub Packages problem must not stop the RubyGems release below.
+        continue-on-error: true
+        env:
+          GEM_HOST_API_KEY: Bearer ${{ secrets.GITHUB_TOKEN }}
+        run: gem push --host "https://rubygems.pkg.github.com/${GITHUB_REPOSITORY_OWNER}" "pkg/fast_sheet-${GITHUB_REF_NAME#v}.gem"
+
+      - uses: rubygems/configure-rubygems-credentials@v2.1.0
+
+      - name: Push to RubyGems
+        run: for gem in pkg/*.gem; do gem push "$gem"; done

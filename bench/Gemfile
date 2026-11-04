@@ -1,0 +1,9 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gem "csv"
+gem "fast_sheet", path: ".."
+gem "fast_xlsx"
+gem "roo"
+gem "cgi" # roo requires cgi, which Ruby 4.0 no longer bundles
