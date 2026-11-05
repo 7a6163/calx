@@ -193,7 +193,20 @@ jobs:
           GEM_HOST_API_KEY: Bearer ${{ secrets.GITHUB_TOKEN }}
         run: gem push --host "https://rubygems.pkg.github.com/${GITHUB_REPOSITORY_OWNER}" "pkg/calx-${GITHUB_REF_NAME#v}.gem"
 
-      - uses: rubygems/configure-rubygems-credentials@v2.1.0
+      # What rubygems/configure-rubygems-credentials does, plus `owner`: RubyGems
+      # needs it to create a new gem by trusted publishing, and the action (v2.1.0)
+      # can't pass it yet. 98290 is the owning RubyGems.org account's ID.
+      - name: Exchange the OIDC token for a RubyGems API key
+        run: |
+          jwt=$(curl -sS --fail-with-body -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=rubygems.org" | jq -r .value)
+          echo "::add-mask::${jwt}"
+          key=$(jq -n --arg jwt "$jwt" '{jwt: $jwt, owner: 98290}' |
+            curl -sS --fail-with-body -X POST https://rubygems.org/api/v1/oidc/trusted_publisher/exchange_token \
+              -H "content-type: application/json" -H "accept: application/json" --data @- | jq -r .rubygems_api_key)
+          if [ -z "$key" ] || [ "$key" = null ]; then echo "::error::No API key returned"; exit 1; fi
+          echo "::add-mask::${key}"
+          echo "GEM_HOST_API_KEY=${key}" >> "$GITHUB_ENV"
 
       - name: Push to RubyGems
         run: for gem in pkg/*.gem; do gem push "$gem"; done
