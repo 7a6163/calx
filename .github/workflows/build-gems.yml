@@ -201,10 +201,11 @@ jobs:
           jwt=$(curl -sS --fail-with-body -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=rubygems.org" | jq -r .value)
           echo "::add-mask::${jwt}"
-          key=$(jq -n --arg jwt "$jwt" '{jwt: $jwt, owner: 98290}' |
-            curl -sS --fail-with-body -X POST https://rubygems.org/api/v1/oidc/trusted_publisher/exchange_token \
-              -H "content-type: application/json" -H "accept: application/json" --data @- | jq -r .rubygems_api_key)
-          if [ -z "$key" ] || [ "$key" = null ]; then echo "::error::No API key returned"; exit 1; fi
+          res=$(jq -n --arg jwt "$jwt" '{jwt: $jwt, owner: "98290"}' |
+            curl -sS -X POST https://rubygems.org/api/v1/oidc/trusted_publisher/exchange_token \
+              -H "content-type: application/json" -H "accept: application/json" --data @-)
+          key=$(jq -r '.rubygems_api_key // empty' <<<"$res")
+          if [ -z "$key" ]; then echo "::error::No API key returned: ${res}"; exit 1; fi
           echo "::add-mask::${key}"
           echo "GEM_HOST_API_KEY=${key}" >> "$GITHUB_ENV"
 
