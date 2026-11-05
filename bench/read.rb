@@ -11,6 +11,11 @@ require "fast_xlsx"
 require "roo"
 require "simple_xlsx_reader"
 require "tmpdir"
+begin
+  require "fastsheet" # optional: not on RubyGems in a current version, install from GitHub
+rescue LoadError
+  nil
+end
 
 ROWS = Integer(ARGV[0] || 200_000)
 
@@ -62,12 +67,16 @@ Dir.mktmpdir do |dir|
   ROWS.times { |i| ws << [i, "item#{i}", i * 1.5, Date.new(2026, 1, 1) + (i % 365), "north"] }
   wb.save(path)
 
+  xlsx_readers = {
+    "calx Calx.each_row" => -> { count_each(Calx.each_row(path)) },
+    "creek simple_rows" => -> { count_each(Creek::Book.new(path).sheets[0].simple_rows) },
+    "simple_xlsx_reader rows.each" => -> { count_each(SimpleXlsxReader.open(path).sheets[0].rows) },
+    "roo each_row_streaming" => -> { count_each(Roo::Excelx.new(path).to_enum(:each_row_streaming)) }
+  }
+  xlsx_readers["fastsheet Sheet#rows"] = -> { Fastsheet::Sheet.new(path).rows.size } if defined?(Fastsheet)
+
   report("xlsx: #{ROWS} rows x 5 (integer, string, float, date, string), " \
-         "#{(File.size(path) / 1e6).round(1)} MB", ROWS, 3,
-         "calx Calx.each_row" => -> { count_each(Calx.each_row(path)) },
-         "creek simple_rows" => -> { count_each(Creek::Book.new(path).sheets[0].simple_rows) },
-         "simple_xlsx_reader rows.each" => -> { count_each(SimpleXlsxReader.open(path).sheets[0].rows) },
-         "roo each_row_streaming" => -> { count_each(Roo::Excelx.new(path).to_enum(:each_row_streaming)) })
+         "#{(File.size(path) / 1e6).round(1)} MB", ROWS, 3, xlsx_readers)
 end
 
 puts "\nRuby #{RUBY_VERSION}#{" +YJIT" if defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?}, #{RUBY_PLATFORM}"

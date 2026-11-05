@@ -3,7 +3,7 @@
 [![CI](https://github.com/7a6163/calx/actions/workflows/main.yml/badge.svg)](https://github.com/7a6163/calx/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/7a6163/calx/graph/badge.svg)](https://codecov.io/gh/7a6163/calx)
 
-Read CSV, TSV and spreadsheets (xlsx, xlsm, xlsb, xls, ods) row by row from Ruby with a Rust engine ([csv](https://github.com/BurntSushi/rust-csv) and [calamine](https://github.com/tafia/calamine), via [magnus](https://github.com/matsadler/magnus)). The CSV reader is 4–15× faster than Ruby's `CSV`, and the xlsx reader 10–35× faster than simple_xlsx_reader, roo and creek ([benchmarks](#performance)).
+Read CSV, TSV and spreadsheets (xlsx, xlsm, xlsb, xls, ods) row by row from Ruby with a Rust engine ([csv](https://github.com/BurntSushi/rust-csv) and [calamine](https://github.com/tafia/calamine), via [magnus](https://github.com/matsadler/magnus)). The CSV reader is 4–16× faster than Ruby's `CSV`, and the xlsx reader 10–27× faster than simple_xlsx_reader, roo and creek ([benchmarks](#performance)).
 
 It only reads. To write xlsx files, see its sibling [fast_xlsx](https://github.com/7a6163/fast_xlsx).
 
@@ -69,30 +69,33 @@ Options:
 
 | Library | Method | Time | vs calx |
 |---|---|---:|---:|
-| **calx** 0.1.0 | `Calx.each_row` | **76 ms** | 1.0× |
-| **calx** 0.1.0 | `Calx.read` | **74 ms** | 1.0× |
-| csv 3.3.7 | `CSV.foreach` | 332 ms | 4.4× slower |
-| csv 3.3.7 | `CSV.read` | 407 ms | 5.4× slower |
+| **calx** 0.1.0 | `Calx.each_row` | **51 ms** | 1.0× |
+| **calx** 0.1.0 | `Calx.read` | **49 ms** | 1.0× |
+| csv 3.3.7 | `CSV.foreach` | 231 ms | 4.5× slower |
+| csv 3.3.7 | `CSV.read` | 327 ms | 6.4× slower |
 
 **CSV, 10 columns with quotes, commas, newlines and CJK** (26.2 MB)
 
 | Library | Method | Time | vs calx |
 |---|---|---:|---:|
-| **calx** 0.1.0 | `Calx.each_row` | **99 ms** | 1.0× |
-| **calx** 0.1.0 | `Calx.read` | **122 ms** | 1.2× |
-| csv 3.3.7 | `CSV.foreach` | 1,203 ms | 12.2× slower |
-| csv 3.3.7 | `CSV.read` | 1,452 ms | 14.7× slower |
+| **calx** 0.1.0 | `Calx.each_row` | **64 ms** | 1.0× |
+| **calx** 0.1.0 | `Calx.read` | **64 ms** | 1.0× |
+| csv 3.3.7 | `CSV.foreach` | 865 ms | 13.4× slower |
+| csv 3.3.7 | `CSV.read` | 1,012 ms | 15.7× slower |
 
 **xlsx, 5 columns: integer, string, float, date, string** (6.0 MB, written by fast_xlsx)
 
 | Library | Method | Time | vs calx |
 |---|---|---:|---:|
-| **calx** 0.1.0 | `Calx.each_row` | **324 ms** | 1.0× |
-| simple_xlsx_reader 5.1.0 | `rows.each` | 3,480 ms | 10.7× slower |
-| roo 4.0.0 | `each_row_streaming` | 7,568 ms | 23.3× slower |
-| creek 2.6.3 | `simple_rows` | 11,466 ms | 35.4× slower |
+| **calx** 0.1.0 | `Calx.each_row` | **222 ms** | 1.0× |
+| fastsheet 0.2.0 (GitHub) | `Sheet.new(path).rows` | 281 ms | 1.3× slower |
+| simple_xlsx_reader 5.1.0 | `rows.each` | 2,411 ms | 10.8× slower |
+| roo 4.0.0 | `each_row_streaming` | 5,117 ms | 23.0× slower |
+| creek 2.6.3 | `simple_rows` | 6,014 ms | 27.0× slower |
 
 Ruby's `CSV` slows down most on quoted fields, which real exports and uploads usually have. The libraries don't return quite the same thing: roo yields cell objects and creek yields a Hash per row, while calx and simple_xlsx_reader yield Arrays of values.
+
+fastsheet also uses calamine, so it is close on speed, but it builds every row before returning any and its values differ: whole numbers come back as Float (`1.0`), dates as a `Time` at midnight UTC (so `2026-01-02 08:00 +0800` in Taipei, and the previous day west of UTC), and error cells as `nil`. It reads the first sheet only and no CSV. Its current version is not on RubyGems (0.1.1 there is from 2017), so the benchmark includes it only when it is installed from [GitHub](https://github.com/dmk/fastsheet).
 
 Most of calx's time goes into making the Ruby Strings and Arrays: parsing alone is about 5× faster again. Times move by 10–30% between runs, so treat the ratios as rough. Run it yourself:
 
