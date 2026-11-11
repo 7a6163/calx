@@ -20,7 +20,7 @@ GEM
     fast_xlsx (1.1.0-x86_64-linux)
     fast_xlsx (1.1.0-x86_64-linux-musl)
     io-console (0.9.5)
-    irb (1.18.0)
+    irb (1.19.0)
       pp (>= 0.6.0)
       prism (>= 1.3.0)
       rdoc (>= 4.0.0)
@@ -114,7 +114,7 @@ CHECKSUMS
   fast_xlsx (1.1.0-x86_64-linux) sha256=c3fa3850e60155e8394f9e10604b9643a94df5b80cf546b3071b90d656685e83
   fast_xlsx (1.1.0-x86_64-linux-musl) sha256=967002c7ad8ce9827f18ba3fe0718ca02c33f29ae5bbacb5417d9dba558725b0
   io-console (0.9.5) sha256=83dd9bbf4c4680416629245b39cd4212eb5f4d9a4ea91804870c1f6b846414d5
-  irb (1.18.0) sha256=de9454a0703a54704b9811a5ef31a60c86949fbf4013fcf244fabc7c775248e3
+  irb (1.19.0) sha256=55ee56acbdd6c9fe06a2e6909f46a24e5c41f45f16906bab04e8049cf46f1d27
   json (3.1.0) sha256=3ce7ccf8fde58960177a3a756c31f292a4c1e1dedee884547096a5b0604e3bd8
   language_server-protocol (3.17.0.6) sha256=5ef2c0c138f8267e1bc631d3328347d354f96724b0af22f2c79516120443b7f0
   lint_roller (1.1.0) sha256=2c0c845b632a7d172cb849cc90c1bce937a28c5c8ccccb50dfd46a485003cc87
