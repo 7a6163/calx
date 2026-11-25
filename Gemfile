@@ -8,7 +8,7 @@ gem "irb"
 gem "rake", "~> 13.0"
 gem "rake-compiler"
 
-gem "fast_xlsx", "~> 1.1" # writes the xlsx test fixtures
+gem "fast_xlsx", "~> 1.2" # writes the xlsx test fixtures
 gem "minitest", "~> 6.0"
 gem "rubocop", "~> 1.92"
 

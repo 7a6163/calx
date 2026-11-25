@@ -10,15 +10,15 @@ GEM
     ast (2.4.3)
     drb (2.2.3)
     erb (6.0.7)
-    fast_xlsx (1.1.0)
+    fast_xlsx (1.2.0)
       rb_sys (~> 0.9.130)
-    fast_xlsx (1.1.0-aarch64-linux)
-    fast_xlsx (1.1.0-aarch64-linux-musl)
-    fast_xlsx (1.1.0-arm-linux-musl)
-    fast_xlsx (1.1.0-arm64-darwin)
-    fast_xlsx (1.1.0-x86_64-darwin)
-    fast_xlsx (1.1.0-x86_64-linux)
-    fast_xlsx (1.1.0-x86_64-linux-musl)
+    fast_xlsx (1.2.0-aarch64-linux)
+    fast_xlsx (1.2.0-aarch64-linux-musl)
+    fast_xlsx (1.2.0-arm-linux-musl)
+    fast_xlsx (1.2.0-arm64-darwin)
+    fast_xlsx (1.2.0-x86_64-darwin)
+    fast_xlsx (1.2.0-x86_64-linux)
+    fast_xlsx (1.2.0-x86_64-linux-musl)
     io-console (0.9.5)
     irb (1.18.0)
       pp (>= 0.6.0)
@@ -92,7 +92,7 @@ PLATFORMS
 
 DEPENDENCIES
   calx!
-  fast_xlsx (~> 1.1)
+  fast_xlsx (~> 1.2)
   irb
   minitest (~> 6.0)
   rake (~> 13.0)
@@ -105,14 +105,14 @@ CHECKSUMS
   calx (0.1.0)
   drb (2.2.3) sha256=0b00d6fdb50995fe4a45dea13663493c841112e4068656854646f418fda13373
   erb (6.0.7) sha256=c5ca6dc25b0ef974a44dc8f59fe847577122483b1968a38dec305c60bf91ee92
-  fast_xlsx (1.1.0) sha256=bcf747e8029e661bb770a8c2f339d8d4c78f1a530b9047ee47efe0d80d59d8d7
-  fast_xlsx (1.1.0-aarch64-linux) sha256=b5c1b5a2827a966a442c4c607570da192049229b6752ebc1f20470733210f61d
-  fast_xlsx (1.1.0-aarch64-linux-musl) sha256=c9792435375854d9396de474b7af01f1a5d0a0805cb91fdeaf8683aea6a18abc
-  fast_xlsx (1.1.0-arm-linux-musl) sha256=64d5bb0fdb052d8f119de04b6a324ceeb4254329f4d576f8a0a6eb2ecd6b7a66
-  fast_xlsx (1.1.0-arm64-darwin) sha256=2fd4248319cc50b9e222c66fa457659f7b3dc8386fa94e3bcbd2b1bb805e0f65
-  fast_xlsx (1.1.0-x86_64-darwin) sha256=b01b807da075df82b2a3732c73739b35b4a61915728979b11c29bc2198eddcea
-  fast_xlsx (1.1.0-x86_64-linux) sha256=c3fa3850e60155e8394f9e10604b9643a94df5b80cf546b3071b90d656685e83
-  fast_xlsx (1.1.0-x86_64-linux-musl) sha256=967002c7ad8ce9827f18ba3fe0718ca02c33f29ae5bbacb5417d9dba558725b0
+  fast_xlsx (1.2.0) sha256=e1438bb9ed46f0d84330ab3b5a0fa53810c258b1c48a932ad493e20930688f27
+  fast_xlsx (1.2.0-aarch64-linux) sha256=c6422eeead827adccd4715015dce498ee49c2bfc6e5e300a9bce274aeccac0be
+  fast_xlsx (1.2.0-aarch64-linux-musl) sha256=15218d7c2ad3d25ef8d56808df6e850ef23f3acaea3e74c4ffce24c51fb22bc6
+  fast_xlsx (1.2.0-arm-linux-musl) sha256=d4f470c3e8a0d8e75c9563532e9a002a569a295b92706022bc9518ccfded1b08
+  fast_xlsx (1.2.0-arm64-darwin) sha256=e234fc82c35ed5643cf0659316d0fbdd59826577f7dae57dae53194db1cd5695
+  fast_xlsx (1.2.0-x86_64-darwin) sha256=764b510e6eeafb063d63125d962f28a6f62b90809a51be02e73ba7efc4e5ed54
+  fast_xlsx (1.2.0-x86_64-linux) sha256=b419e023f0df4709921fcd883478572ae25422954560221549d702aff868ac76
+  fast_xlsx (1.2.0-x86_64-linux-musl) sha256=16e1158de5d907c6bf45d12f21bee1f9879808c11cd8fdfc61bfb67829edd0d6
   io-console (0.9.5) sha256=83dd9bbf4c4680416629245b39cd4212eb5f4d9a4ea91804870c1f6b846414d5
   irb (1.18.0) sha256=de9454a0703a54704b9811a5ef31a60c86949fbf4013fcf244fabc7c775248e3
   json (3.1.0) sha256=3ce7ccf8fde58960177a3a756c31f292a4c1e1dedee884547096a5b0604e3bd8
